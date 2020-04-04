@@ -122,6 +122,8 @@ def insertDataToDB(D, user, password):
         cursor.execute(query)
 
 
+
+
 if __name__ == "__main__":
     DayReduce=1
     sdate = dt.datetime.now().date() - dt.timedelta(days=DayReduce) #дата  прошлых суток

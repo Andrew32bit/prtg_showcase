@@ -20,6 +20,7 @@ with open('creds.yaml') as f:
 UNIXusername=doc['credentials']['username']
 UNIXpassword=doc['credentials']['password']
 
+
 def GetJSONValue(sJSON,key,noError=False):
     try:
         json_str = json.loads(sJSON, encoding="windows-1251")
