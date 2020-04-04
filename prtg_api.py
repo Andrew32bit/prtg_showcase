@@ -51,26 +51,29 @@ default_sennsors=[129511,129512,58526,44047,31310,36352,34972,32705,33681,34948,
 
 ##########################################################################################################################################################
 import sys
-sys.path.append('C:\\MAXI\\Projects\\dpmi\\')
-import dpmi_utils as du
-import datetime as dt
+# sys.path.append('C:\\MAXI\\Projects\\dpmi\\')
+sys.path.append('/Users/a.konstantinov/Desktop/prtg/')
 import requests
+import dpmi_utils as du
+# import dpmi_db
+import datetime as dt
 import pandas as pd
 import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 from subprocess import check_output
-import dpmi_db
+from io import StringIO
 
 ##########################################################################################################################################################
 import logging
-root_path='C:\\MAXI\\Projects\\PRTG_API\\'
+# root_path='C:\\MAXI\\Projects\\PRTG_API\\'
+root_path='/Users/a.konstantinov/Desktop/prtg/'
 app_name='prtg_api'
 
-if sys.version_info[0] < 3:
-    from StringIO import StringIO
-else:
-    from io import StringIO
+# if sys.version_info[0] < 3:
+#     from StringIO import StringIO
+# else:
+#     from io import StringIO
 
 try_log_part=''
 log_ok=False
@@ -122,6 +125,7 @@ def s_AddLog(msg):
 ##########################################################################################################################################################
 # Получаем текущую структуру полей таблицы default.prtg_sensors
 ##########################################################################################################################################################
+
 def get_fields():
     AddLog('START: get_fields')
 
@@ -131,7 +135,8 @@ def get_fields():
     txt=''
     res=du.execute_hive_command(du.hive_sql_prefix('PRTG Sensors import')+'show create table default.prtg_sensors')
     find_str1 = "CREATE EXTERNAL TABLE `default.prtg_sensors`("
-    find_str2 = ")COMMENT '"+copyRightTableString+"'"
+    # find_str2 = ")COMMENT '"+copyRightTableString+"'" TODO find_str2
+    find_str2 = "COMMENT '" + copyRightTableString + "'"
     res=res.replace('\n','')
     pos1=res.find(find_str1,0)
     if pos1>=0:
@@ -151,11 +156,11 @@ def get_fields():
             else:
                 current_type.append(columns_content1[1].replace(' ','').strip(' \t\n\r'))
                 current_comment.append('')
-        except:
+        except Exception as e:
             current_columns = []
             current_type = []
             current_comment = []
-            AddLog('ERROR: get_fields')
+            AddLog('ERROR: get_fields '+ e)
             return current_columns, current_type, current_comment
 
     AddLog('END: get_fields: '+str(current_columns)+' / '+str(current_type))
@@ -185,6 +190,8 @@ def recreate_table_prtg_sensors(columns,ColumnsName):
 
         fields += field + ' ' + type_str + comment +'\n'
 
+        print(fields)
+
     sql=du.hive_sql_prefix('PRTG Sensors import') + \
         'drop table if exists default.prtg_sensors;\n' \
         'CREATE EXTERNAL TABLE default.prtg_sensors\n' \
@@ -194,6 +201,7 @@ def recreate_table_prtg_sensors(columns,ColumnsName):
         'ROW FORMAT DELIMITED FIELDS TERMINATED BY "\\t"\n' \
         'STORED AS TEXTFILE LOCATION "/user/stcuscol/published/prtg_sensors/"\n' \
         'TBLPROPERTIES ("skip.header.line.count"="1");'
+    print(sql)
 
 
     text_res = du.execute_hive_command(sql)
@@ -213,7 +221,6 @@ def get_prtg_df(id,sdate):
     AddLog('STRAT: get_prtg_df: id='+str(id)+' sdate='+str(sdate))
 
     try:
-
         url_str_1 = 'https://10.1.1.248/public/checklogin.htm'
         # PROD - полный ответ с API
         url_str = 'https://10.1.1.248/api/historicdata.csv?id='+str(id)+'&avg=0&sdate='+sdate+'-00-00-00&edate='+sdate+'-23-59-59&username=ibm&passhash=1619417265'
@@ -234,7 +241,7 @@ def get_prtg_df(id,sdate):
         # теперь API
         print(url_str)
         data = session.request('GET',url_str,verify=False)
-        data = data.content
+        data = data.content.decode("utf-8") # bug fix
         #print(data.status_code)
         #print(data.headers['content-type'])
 
@@ -337,7 +344,8 @@ def Start_PRTG_API(DayReduce,sennsors):
             error_list.append(str(sensor_id)+' / '+ColumnsName)
             continue
         # Текущий спсиок полей в Hive default.prtg_sensors
-        current_columns, current_type, current_comment = get_fields()
+
+        current_columns, current_type, current_comment = get_fields() # TODO get_fields()
 
         # Насытить словарь COMMENT ColumnsName Значениями из списка current_comment
         for row in range(0,len(current_columns)):
@@ -348,7 +356,7 @@ def Start_PRTG_API(DayReduce,sennsors):
         # Порядок колонок + Ананлиз новых и пропущеных
         AddLog('В наборе: '+str(prtg_df.columns))
         AddLog('В таблице: '+str(current_columns))
-
+        print(prtg_df.columns)
 
         existing_columns=[]
         absent_columns = []
@@ -359,7 +367,7 @@ def Start_PRTG_API(DayReduce,sennsors):
                 existing_columns.append(cur_col)
             else:
                 existing_columns.append('')
-                # Долбавляем пустую колонку вместо несуществующих полей
+                # Долбавляем пустую колонку вместо несуществующих полейTODO
                 prtg_df[cur_col]='null'
 
         # dt и id сделать первыми
@@ -377,14 +385,11 @@ def Start_PRTG_API(DayReduce,sennsors):
         AddLog('Отсутствуют: ' + str(absent_columns))
 
 
-
-        # Пересоздать табицу: Добавить absent_columns
-        if len(absent_columns)>0:
-            res=recreate_table_prtg_sensors(current_columns + absent_columns,ColumnsName)
-        # Сохранить файл по шаблону: current_columns + absent_columns
-        prtg_df = prtg_df[current_columns + absent_columns]
-
-        print(prtg_df.head(5))
+        # # # Пересоздать табицу: Добавить absent_columns
+        # if len(absent_columns)>0:
+        #     res=recreate_table_prtg_sensors(current_columns + absent_columns,ColumnsName)
+        # # Сохранить файл по шаблону: current_columns + absent_columns
+        # prtg_df = prtg_df[current_columns + absent_columns]
 
         # Сохраняем в файл
         fn=sdate+'_'+str(sensor_id)
@@ -392,20 +397,24 @@ def Start_PRTG_API(DayReduce,sennsors):
         prtg_df.to_csv(root_path + fn, sep='\t', header=True, encoding='utf-8', index=False)
 
         ok_list.append(str(sensor_id))
+        print(ok_list)
 
         # Перекидываем файл на UNIX машину
+
         for fn in prtg_files:
             du.put_to_sftp(root_path + fn)
 
         # Перекидываем файл на HDFS
         for fn in prtg_files:
+            print(get_HDFSPath(fn))
             du.del_file_hdfs(fn,get_HDFSPath(fn))
             du.put_to_hdfs(fn,get_HDFSPath(fn))
 
         # Удаляем файлы локально и на UNIX машине
         for fn in prtg_files:
             du.remove_from_sftp(fn)
-            check_output("del " + root_path + fn, shell=True)
+            # check_output("del " + root_path + fn, shell=True)
+            check_output("rm " + root_path + fn, shell=True)
 
         prtg_files=[]
 
@@ -432,16 +441,16 @@ def main(DayReduce,sennsors,email=True):
     ok_list=[]
     error_list=[]
     try:
-        res,ok_list,error_list=Start_PRTG_API(DayReduce,sennsors)
+        res,ok_list,error_list=Start_PRTG_API(DayReduce,sennsors) # TODO надо только досюда
     except:
-        res=false
-        None
+        return None
 
     sdate = dt.datetime.now().date() - dt.timedelta(days=DayReduce)
     sdate = sdate.strftime('%Y-%m-%d')
     mail_to = 'ibm@maximatelecom.ru'
     if DayReduce==0 and sennsors==[129511,129512]:
-        mail_to = 'ibm@maximatelecom.ru;a.korolkova@maximatelecom.ru'
+        # mail_to = 'ibm@maximatelecom.ru;a.korolkova@maximatelecom.ru'
+        mail_to = 'andreaseuro@yandex.ru'
 #    mail_to = 'ibm@maximatelecom.ru;p.bulavin@maximatelecom.ru'
     subject = u'PRTG API сбор данных'
     body = u'<h2>за ' + sdate + u'</h2><BR>'
@@ -451,7 +460,7 @@ def main(DayReduce,sennsors,email=True):
 
     # Нотификации и и т.д.
     if len(error_list)==0 and res:
-        dpmi_db.mssql().UpdateTaskProperty(348, str(len(sennsors)), dt.datetime.now().date() - dt.timedelta(days=1))
+        # dpmi_db.mssql().UpdateTaskProperty(348, str(len(sennsors)), dt.datetime.now().date() - dt.timedelta(days=1))
 
         s_AddLog('>>>>>>>>>>>>>>>>>>>>> everything OK')
 
@@ -464,9 +473,12 @@ def main(DayReduce,sennsors,email=True):
         s_AddLog(str(ok_list))
     else:
         email = True
-        mail_to = 'ibm@maximatelecom.ru;p.bulavin@maximatelecom.ru'
+        # mail_to = 'ibm@maximatelecom.ru;p.bulavin@maximatelecom.ru'
+        mail_to='andreaseuro@yandex.ru'
         if DayReduce == 0 and sennsors == [129511, 129512, 131299]:
-            mail_to = 'ibm@maximatelecom.ru;a.korolkova@maximatelecom.ru'
+            mail_to='a.konstantinov@maximatelecom.ru'
+            # mail_to = 'ibm@maximatelecom.ru;a.korolkova@maximatelecom.ru'
+
         subject=u'ОШИБКА '+subject
         if not res:
             s_AddLog('>>>>>>>>>>>>>>>>>>>>> Завершился с EXCEPTION ')
@@ -482,8 +494,8 @@ def main(DayReduce,sennsors,email=True):
         s_AddLog('Список сенсоров с ошибкой:')
         s_AddLog(str(error_list))
 
-    if email:
-        dpmi_db.mssql().execute("insert into send_mail(mail_to,subject,body) values('" + mail_to + "','" + subject + "','" + body + "')")
+    # if email:
+    #     dpmi_db.mssql().execute("insert into send_mail(mail_to,subject,body) values('" + mail_to + "','" + subject + "','" + body + "')")
 
     s_AddLog('END at ' + dt.datetime.now().strftime("%Y-%m-%d %H:%M"))
     s_AddLog('')
@@ -505,7 +517,8 @@ if __name__ == "__main__":
                 #
                 #main(dr, [58526,44047,31310,36352,34972,32705,33681,34948,34990,63664,32427],email=False)
             '''
-            main(0, [129511,129512,131299])
+            #main(0, [129511])
+            main(0, [129511,129512,58526,44047,31310,36352,34972,32705,33681,34948,34990,63664,32427,93455,93457,122054,115515,98481,98483,115529])
             # ПРОВАЛЫ
             #22-03-2018 28-03-2018
         except:
