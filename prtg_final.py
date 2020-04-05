@@ -138,7 +138,7 @@ if __name__ == "__main__":
                     'trafficin(volume)(raw)', 'trafficin(speed)(raw)', 'trafficout(volume)(raw)',
                     'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)'] #список дефолтных колонок для инсерта в куду
 
-    # put_all_sensors_to_hdfs(sensors_list) #кладем данные в HDFS
+    put_all_sensors_to_hdfs(sensors_list) #кладем данные в HDFS
     df=data_to_kudu(sensors_list)
     insertDataToDB(df, user=user, password=password) # инсерт данных в куду
 

@@ -33,7 +33,6 @@ def GetJSONValue(sJSON,key,noError=False):
 def saveList(LogList,FileName):
     try:
         fo = open(FileName, "w+")
-        #line = fo.writelines( LogList )
         for item in LogList:
             fo.write("%s\n" % item)
         fo.close()
