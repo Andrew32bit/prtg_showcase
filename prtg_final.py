@@ -19,6 +19,11 @@ warnings.filterwarnings("ignore")
 with open('creds.yaml') as f:
     doc=yaml.load(f)
 
+user=doc['credentials']['userimpala']
+password=doc['credentials']['passwordimpala']
+prtg_login=doc['credentials']['prtg_login']
+passhash=doc['credentials']['passhash']
+
 def get_HDFSPath(filename):
     rootPath='/user/stcuscol/published/prtg_sensors_v2/'
 
@@ -36,7 +41,7 @@ def get_HDFSPath(filename):
     return rootPath + 'year=' + year + '/month=' + month + '/day=' + day + '/'
 
 def get_data(sensors_id,sdate,DayReduce):
-    url_str = 'https://10.1.1.248/api/historicdata.csv?id='+str(sensors_id)+'&avg=0&sdate='+sdate+'-00-00-00&edate='+sdate+'-23-59-59&username={}&passhash={}'.format(doc['credentials']['prtg_login'],doc['credentials']['passhash'])
+    url_str = 'https://10.1.1.248/api/historicdata.csv?id='+str(sensors_id)+'&avg=0&sdate='+sdate+'-00-00-00&edate='+sdate+'-23-59-59&username={}&passhash={}'.format(prtg_login,passhash)
     session = requests.Session()
     data = session.request('GET',url_str,verify=False)
     data = data.content.decode("utf-8") # bug fix
@@ -136,6 +141,6 @@ if __name__ == "__main__":
 
     # put_all_sensors_to_hdfs(sensors_list) #кладем данные в HDFS
     df=data_to_kudu(sensors_list)
-    insertDataToDB(df, user=doc['credentials']['userimpala'], password=doc['credentials']['passwordimpala']) # инсерт данных в куду
+    insertDataToDB(df, user=user, password=password) # инсерт данных в куду
 
 # TODO вынести в переменные окружения Dockerfile когда будет AF.Также проверить рабочие креды на инсерт данных в Impala
