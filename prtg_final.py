@@ -42,7 +42,7 @@ def get_HDFSPath(filename):
 
     return rootPath + 'year=' + year + '/month=' + month + '/day=' + day + '/'
 
-def get_data(sensors_id,sdate,DayReduce):
+def get_data(sensors_id,sdate):
     url_str = 'https://10.1.1.248/api/historicdata.csv?id='+str(sensors_id)+'&avg=0&sdate='+sdate+'-00-00-00&edate='+sdate+'-23-59-59&username={}&passhash={}'.format(prtg_login,passhash)
     session = requests.Session()
     data = session.request('GET',url_str,verify=False)
@@ -75,7 +75,7 @@ def data_for_kudu(df,default_list):
 def processing_for_hdfs(sensor_id,sdate):
     root_path = './'
     fn=sdate+'_'+str(sensor_id)
-    get_data(sensor_id,sdate,DayReduce).to_csv(root_path + fn, sep='\t', header=True, encoding='utf-8', index=False)
+    get_data(sensor_id,sdate).to_csv(root_path + fn, sep='\t', header=True, encoding='utf-8', index=False)
 
     # Перекидываем файл на UNIX машину
     du.put_to_sftp(root_path + fn)
@@ -96,7 +96,7 @@ def put_all_sensors_to_hdfs(sensors_list):
 def data_to_kudu(sensors_list):
     result = pd.DataFrame()
     for i in tqdm(sensors_list):
-        df=get_data(i, sdate, DayReduce)
+        df=get_data(i, sdate)
         df=data_for_kudu(df, default_list)
         result = result.append(df)
     return result
@@ -141,7 +141,7 @@ if __name__ == "__main__":
                     'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)'] #список дефолтных колонок для инсерта в куду
 
     put_all_sensors_to_hdfs(sensors_list) #кладем данные в HDFS
-    df=data_to_kudu(sensors_list)
-    insertDataToDB(df, user=user, password=password) # инсерт данных в куду
+    # df=data_to_kudu(sensors_list)
+    # insertDataToDB(df, user=user, password=password) # инсерт данных в куду
 
 # TODO вынести в переменные окружения Dockerfile когда будет AF.Также проверить рабочие креды на инсерт данных в Impala
