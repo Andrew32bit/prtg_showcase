@@ -50,7 +50,6 @@ class dpmiLog(object):
         try:
             self.LogPath=aLogPath
             now = datetime.datetime.now()
-            #self.logFile = logging.basicConfig(filename=aLogPath+'log'+now.strftime("%Y-%m")+'.txt',level=logging.DEBUG)
             self.logFile = logging.basicConfig(format = u'%(levelname)-8s [%(asctime)s] %(message)s', level = logging.INFO, filename=aLogPath+'log'+now.strftime("%Y-%m")+'.txt')
             self.ClearLog()
         except:
