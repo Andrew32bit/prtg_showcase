@@ -10,7 +10,6 @@ import os
 import yaml
 
 from impala import dbapi
-from impala.util import as_pandas
 from subprocess import check_output
 from tqdm import tqdm
 from io import StringIO
@@ -141,7 +140,7 @@ if __name__ == "__main__":
                     'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)'] #список дефолтных колонок для инсерта в куду
 
     put_all_sensors_to_hdfs(sensors_list) #кладем данные в HDFS
-    # df=data_to_kudu(sensors_list)
-    # insertDataToDB(df, user=user, password=password) # инсерт данных в куду
+    df=data_to_kudu(sensors_list)
+    insertDataToDB(df, user=user, password=password) # инсерт данных в куду
 
 # TODO вынести в переменные окружения Dockerfile когда будет AF.Также проверить рабочие креды на инсерт данных в Impala
