@@ -24,6 +24,8 @@ password=doc['credentials']['passwordimpala']
 prtg_login=doc['credentials']['prtg_login']
 passhash=doc['credentials']['passhash']
 
+
+
 def get_HDFSPath(filename):
     rootPath='/user/stcuscol/published/prtg_sensors_v2/'
 
