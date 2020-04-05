@@ -143,4 +143,4 @@ if __name__ == "__main__":
     df=data_to_kudu(sensors_list)
     insertDataToDB(df, user=user, password=password) # инсерт данных в куду
 
-# TODO вынести в переменные окружения Dockerfile когда будет AF.Также проверить рабочие креды на инсерт данных в Impala
+# TODO вынести в переменные окружения Dockerfile когда будет AF.Также проверить рабочие креды на инсерт данных в Impala.
