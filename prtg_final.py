@@ -18,11 +18,11 @@ warnings.filterwarnings("ignore")
 with open('creds.yaml') as f:
     doc=yaml.load(f)
 
-user=doc['credentials']['userimpala']
-password=doc['credentials']['passwordimpala']
-prtg_login=doc['credentials']['prtg_login']
-passhash=doc['credentials']['passhash']
 
+user = doc['credentials']['userimpala']
+password = doc['credentials']['passwordimpala']
+prtg_login = doc['credentials']['prtg_login']
+passhash = doc['credentials']['passhash']
 
 
 def get_HDFSPath(filename):
@@ -100,7 +100,7 @@ def data_to_kudu(sensors_list):
         result = result.append(df)
     return result
 
-def insertDataToDB(D, user, password):
+def insertSheduleToDB(D, user, password):
     D['id'] = D['id'].astype(int)
     D['traffictotal(volume)(raw)'] = D['traffictotal(volume)(raw)'].astype(str)
     D['traffictotal(speed)(raw)'] = D['traffictotal(speed)(raw)'].astype(str)
@@ -128,19 +128,22 @@ def insertDataToDB(D, user, password):
         cursor.execute(query)
 
 
-
-
 if __name__ == "__main__":
-    sdate = dt.datetime.now().date() - dt.timedelta(days=1) #дата  прошлых суток
+    sdate = dt.datetime.now().date() - dt.timedelta(days=1)
     sdate = sdate.strftime('%Y-%m-%d')
     sensors_list = [129511, 129512, 58526, 44047, 31310, 36352, 34972, 32705, 33681, 34948, 34990, 63664, 32427, 93455,
-                    93457, 122054, 115515, 98481, 98483, 115529] # список дефолтных сенсоров
+                    93457, 122054, 115515, 98481, 98483, 115529]
     default_list = ['datetime', 'id', 'traffictotal(volume)(raw)', 'traffictotal(speed)(raw)',
                     'trafficin(volume)(raw)', 'trafficin(speed)(raw)', 'trafficout(volume)(raw)',
-                    'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)'] #список дефолтных колонок для инсерта в куду
+                    'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)']
 
-    put_all_sensors_to_hdfs(sensors_list) #кладем данные в HDFS
+    put_all_sensors_to_hdfs(sensors_list)
     df=data_to_kudu(sensors_list)
-    insertDataToDB(df, user=user, password=password) # инсерт данных в куду
+    insertSheduleToDB(df, user=user, password=password)
 
-# TODO вынести в переменные окружения Dockerfile когда будет AF.Также проверить рабочие креды на инсерт данных в Impala.
+
+
+
+
+
+# TODO вынести в переменные окружения
