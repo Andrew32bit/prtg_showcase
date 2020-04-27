@@ -15,14 +15,22 @@ from tqdm import tqdm
 from io import StringIO
 warnings.filterwarnings("ignore")
 
-with open('creds.yaml') as f:
-    doc=yaml.load(f)
+# with open('creds.yaml') as f:
+#     doc=yaml.load(f)
 
 
-user = doc['credentials']['userimpala']
-password = doc['credentials']['passwordimpala']
-prtg_login = doc['credentials']['prtg_login']
-passhash = doc['credentials']['passhash']
+
+
+# user = doc['credentials']['userimpala']
+# password = doc['credentials']['passwordimpala']
+# prtg_login = doc['credentials']['prtg_login']
+# passhash = doc['credentials']['passhash']
+
+user = os.environ['USER']
+password = os.environ['PASS']
+prtg_login = os.environ['PRTG_LOGIN']
+passhash = os.environ['PASSHASH']
+
 
 
 def get_HDFSPath(filename):
@@ -129,7 +137,7 @@ def insertSheduleToDB(D, user, password):
 
 
 if __name__ == "__main__":
-    sdate = dt.datetime.now().date() - dt.timedelta(days=1)
+    sdate = dt.datetime.now().date() - dt.timedelta(days=2)
     sdate = sdate.strftime('%Y-%m-%d')
     sensors_list = [129511, 129512, 58526, 44047, 31310, 36352, 34972, 32705, 33681, 34948, 34990, 63664, 32427, 93455,
                     93457, 122054, 115515, 98481, 98483, 115529]
@@ -137,7 +145,7 @@ if __name__ == "__main__":
                     'trafficin(volume)(raw)', 'trafficin(speed)(raw)', 'trafficout(volume)(raw)',
                     'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)']
 
-    put_all_sensors_to_hdfs(sensors_list)
+    #put_all_sensors_to_hdfs(sensors_list)
     df=data_to_kudu(sensors_list)
     insertSheduleToDB(df, user=user, password=password)
 
@@ -147,3 +155,7 @@ if __name__ == "__main__":
 
 
 # TODO вынести в переменные окружения
+
+#docker run --rm -e USER='a.konstantinov' -e PASS='!Louis175' -e PRTG_LOGIN='ibm' -e PASSHASH='1619417265' -e UNIXUSER='stcuscol' -e UNIXPASSWORD='stcuscol' test_prtg
+
+
