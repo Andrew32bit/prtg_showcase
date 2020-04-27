@@ -137,7 +137,7 @@ def insertSheduleToDB(D, user, password):
 
 
 if __name__ == "__main__":
-    sdate = dt.datetime.now().date() - dt.timedelta(days=2)
+    sdate = dt.datetime.now().date() - dt.timedelta(days=1)
     sdate = sdate.strftime('%Y-%m-%d')
     sensors_list = [129511, 129512, 58526, 44047, 31310, 36352, 34972, 32705, 33681, 34948, 34990, 63664, 32427, 93455,
                     93457, 122054, 115515, 98481, 98483, 115529]
@@ -145,7 +145,7 @@ if __name__ == "__main__":
                     'trafficin(volume)(raw)', 'trafficin(speed)(raw)', 'trafficout(volume)(raw)',
                     'trafficout(speed)(raw)', 'fromlines(volume)(raw)', 'tolines(volume)(raw)', 'coverage(raw)']
 
-    #put_all_sensors_to_hdfs(sensors_list)
+    put_all_sensors_to_hdfs(sensors_list)
     df=data_to_kudu(sensors_list)
     insertSheduleToDB(df, user=user, password=password)
 
