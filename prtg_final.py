@@ -26,6 +26,7 @@ warnings.filterwarnings("ignore")
 # prtg_login = doc['credentials']['prtg_login']
 # passhash = doc['credentials']['passhash']
 
+
 user = os.environ['USER']
 password = os.environ['PASS']
 prtg_login = os.environ['PRTG_LOGIN']
@@ -137,7 +138,8 @@ def insertSheduleToDB(D, user, password):
 
 
 if __name__ == "__main__":
-    sdate = dt.datetime.now().date() - dt.timedelta(days=1)
+    sdate = os.environ['exec_date']
+    # sdate = dt.datetime.now().date() - dt.timedelta(days=1)
     sdate = sdate.strftime('%Y-%m-%d')
     sensors_list = [129511, 129512, 58526, 44047, 31310, 36352, 34972, 32705, 33681, 34948, 34990, 63664, 32427, 93455,
                     93457, 122054, 115515, 98481, 98483, 115529]
@@ -151,10 +153,12 @@ if __name__ == "__main__":
 
 
 
+#sdate = os.environ['exec_date']
 
 
 
-# TODO вынести в переменные окружения
+
+# TODO вынести в sdate
 
 #docker run --rm -e USER='a.konstantinov' -e PASS='!Louis175' -e PRTG_LOGIN='ibm' -e PASSHASH='1619417265' -e UNIXUSER='stcuscol' -e UNIXPASSWORD='stcuscol' test_prtg
 

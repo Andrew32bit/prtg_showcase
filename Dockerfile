@@ -9,4 +9,4 @@ COPY prtg_final.py /add
 WORKDIR /app
 ADD  . /app
 RUN pip install -r requirements.txt
-CMD ["python3","prtg_final.py"]
+CMD ["python3","-u","prtg_final.py"]
