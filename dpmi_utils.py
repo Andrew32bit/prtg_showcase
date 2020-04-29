@@ -14,9 +14,9 @@ except:
 
 Log = None
 
-with open('creds.yaml') as f:
-    doc=yaml.load(f)
-
+# with open('creds.yaml') as f:
+#     doc=yaml.load(f)
+#
 # UNIXusername=doc['credentials']['username']
 # UNIXpassword=doc['credentials']['password']
 UNIXusername=os.environ['UNIXUSER']

@@ -17,10 +17,10 @@ warnings.filterwarnings("ignore")
 
 # with open('creds.yaml') as f:
 #     doc=yaml.load(f)
-
-
-
-
+#
+#
+#
+#
 # user = doc['credentials']['userimpala']
 # password = doc['credentials']['passwordimpala']
 # prtg_login = doc['credentials']['prtg_login']
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     sdate = os.environ['exec_date']
     sdate=(dt.datetime.strptime(sdate, '%Y-%m-%d').date() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
 
-    # sdate = dt.datetime.now().date() - dt.timedelta(days=1)
+    # sdate = dt.datetime.now().date() - dt.timedelta(days=7)
     # sdate = sdate.strftime('%Y-%m-%d') #string to date minus one day and in string back
     sensors_list = [129511, 129512, 58526, 44047, 31310, 36352, 34972, 32705, 33681, 34948, 34990, 63664, 32427, 93455,
                     93457, 122054, 115515, 98481, 98483, 115529]
@@ -152,15 +152,6 @@ if __name__ == "__main__":
     put_all_sensors_to_hdfs(sensors_list)
     df=data_to_kudu(sensors_list)
     insertSheduleToDB(df, user=user, password=password)
-
-
-
-#sdate = os.environ['exec_date']
-
-
-
-
-# TODO вынести в sdate
 
 
 
