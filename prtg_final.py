@@ -26,7 +26,8 @@ warnings.filterwarnings("ignore")
 # prtg_login = doc['credentials']['prtg_login']
 # passhash = doc['credentials']['passhash']
 
-
+sdate = os.environ['exec_date']
+sdate = (dt.datetime.strptime(sdate, '%Y-%m-%d').date() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
 user = os.environ['USER']
 password = os.environ['PASS']
 prtg_login = os.environ['PRTG_LOGIN']
@@ -138,11 +139,6 @@ def insertSheduleToDB(D, user, password):
 
 
 if __name__ == "__main__":
-    sdate = os.environ['exec_date']
-    sdate=(dt.datetime.strptime(sdate, '%Y-%m-%d').date() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
-
-    # sdate = dt.datetime.now().date() - dt.timedelta(days=7)
-    # sdate = sdate.strftime('%Y-%m-%d') #string to date minus one day and in string back
     sensors_list = [129511, 129512, 58526, 44047, 31310, 36352, 34972, 32705, 33681, 34948, 34990, 63664, 32427, 93455,
                     93457, 122054, 115515, 98481, 98483, 115529]
     default_list = ['datetime', 'id', 'traffictotal(volume)(raw)', 'traffictotal(speed)(raw)',
