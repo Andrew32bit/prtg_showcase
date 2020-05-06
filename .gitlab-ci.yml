@@ -1,0 +1,14 @@
+stages:
+  - build-and-push
+
+variables:
+  DOCKER_IMAGE_BASENAME: harbor.vmet.ro/bigdata/prtg-import
+  DOCKER_IMAGE: $DOCKER_IMAGE_BASENAME:$CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID
+
+
+build-and-push:
+  stage: build-and-push
+  script:
+  - echo "$HARBOR_PASSWORD" | docker login -u "$HARBOR_USER" --password-stdin harbor.vmet.ro
+  - docker build -t $DOCKER_IMAGE .
+  - docker push $DOCKER_IMAGE
